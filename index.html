@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>중국어 문장 랜덤 학습 게임</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&family=Noto+Sans+SC:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                        chinese: ['Noto Sans SC', 'sans-serif'],
+                    },
+                    colors: {
+                        ivory: {
+                            50: '#fdfbf7',
+                            100: '#f9f6ef',
+                            200: '#f2ece1',
+                            300: '#e5dcce',
+                        },
+                        emerald: {
+                            850: '#064e3b',
+                            950: '#022c22',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f2ece1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #a8a29e;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #78716c;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.25s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-[#f9f6ef] text-stone-800 min-h-screen font-sans flex flex-col justify-between selection:bg-emerald-600 selection:text-white">
+
+    <header class="bg-white/90 backdrop-blur border-b border-emerald-900/10 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-800 flex items-center justify-center text-white font-bold text-xl shadow-md shadow-emerald-900/10">
+                    句
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-emerald-950 leading-tight">중국어 문장 랜덤 게임</h1>
+                    <p class="text-xs text-stone-500 hidden sm:block">단원별 맞춤 문장 학습 & 해석 확인 플레이어</p>
+                </div>
+            </div>
+
+            <!-- Mode Switcher -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button id="nav-play-btn" onclick="switchTab('play')" class="px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2 bg-emerald-700 text-white shadow-md hover:bg-emerald-800">
+                    <i class="fa-solid fa-gamepad"></i>
+                    <span>게임 플레이</span>
+                </button>
+                <button id="nav-manage-btn" onclick="switchTab('manage')" class="px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 bg-stone-200/80 text-stone-700 hover:bg-stone-300 hover:text-stone-900">
+                    <i class="fa-solid fa-file-pen"></i>
+                    <span>문장 관리</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+
+        <!-- ========================================== -->
+        <!-- PLAY MODE SECTION                          -->
+        <!-- ========================================== -->
+        <section id="tab-play" class="space-y-6">
+            <!-- Top Controls bar -->
+            <div class="bg-white rounded-2xl p-4 border border-stone-200/80 shadow-sm flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <label class="text-xs font-bold uppercase tracking-wider text-emerald-900 whitespace-nowrap">단원 선택</label>
+                    <select id="play-unit-select" onchange="onSelectUnitForPlay()" class="bg-[#fcfbf9] border border-stone-300 text-stone-800 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block w-full sm:w-64 p-2.5 font-semibold shadow-sm">
+                        <!-- Options generated dynamically -->
+                    </select>
+                </div>
+
+                <!-- Game Stats & Settings -->
+                <div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto text-sm">
+                    <div class="flex items-center gap-2 bg-emerald-50 px-3.5 py-1.5 rounded-xl border border-emerald-200">
+                        <span class="text-emerald-800 font-medium">진도:</span>
+                        <span id="play-progress-text" class="font-bold text-emerald-700">0 / 0</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="pinyin-toggle" checked onchange="togglePinyinVisibility()" class="sr-only peer">
+                            <div class="relative w-9 h-5 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
+                            <span class="ms-2 text-xs font-semibold text-stone-600">한어병음 항상 표시</span>
+                        </label>
+                    </div>
+                    <button onclick="resetCurrentGameSession()" class="text-xs px-3.5 py-2 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-medium transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate-right text-stone-500"></i>
+                        <span>다시 시작</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Card View Area -->
+            <div id="game-card-container" class="max-w-3xl mx-auto min-h-[440px] flex flex-col justify-center items-center">
+                <!-- Content will be rendered by JS -->
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- MANAGE MODE SECTION                        -->
+        <!-- ========================================== -->
+        <section id="tab-manage" class="hidden space-y-6">
+            <!-- Header actions for management -->
+            <div class="bg-white rounded-2xl p-5 sm:p-6 border border-stone-200 shadow-sm space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-emerald-950 flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-emerald-700"></i>
+                            단원 및 문장 편집기
+                        </h2>
+                        <p class="text-xs text-stone-500 mt-1">
+                            단원별 문장을 직접 등록/수정하거나, 텍스트 일괄 입력 및 파일 백업이 가능합니다.
+                        </p>
+                    </div>
+
+                    <!-- Import / Export Controls -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="exportDataJSON()" class="px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold border border-stone-300 transition flex items-center gap-2">
+                            <i class="fa-solid fa-download text-emerald-700"></i>
+                            <span>백업 다운로드</span>
+                        </button>
+                        <label class="px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold border border-stone-300 transition flex items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-upload text-teal-700"></i>
+                            <span>백업 불러오기</span>
+                            <input type="file" id="import-json-input" accept=".json" class="hidden" onchange="importDataJSON(event)">
+                        </label>
+                        <button onclick="openConfirmModal('기본 샘플 데이터로 초기화하시겠습니까? (기존 수정 내용 삭제)', executeResetDefaultData)" class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-trash-arrow-up"></i>
+                            <span>초기화</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Unit Toolbar -->
+                <div class="pt-4 border-t border-stone-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-3 flex-1">
+                        <label class="text-xs font-bold uppercase tracking-wider text-emerald-900 whitespace-nowrap">단원 선택:</label>
+                        <select id="manage-unit-select" onchange="onSelectUnitForManage()" class="bg-[#fcfbf9] border border-stone-300 text-stone-800 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block w-full max-w-xs p-2 font-semibold shadow-sm">
+                            <!-- Options generated dynamically -->
+                        </select>
+                        <button onclick="openAddUnitModal()" class="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap shadow-sm">
+                            <i class="fa-solid fa-folder-plus"></i>
+                            <span>새 단원 추가</span>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="openEditUnitModal()" class="px-3 py-2 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-700 text-xs font-medium transition flex items-center gap-1">
+                            <i class="fa-solid fa-pen text-stone-500"></i>
+                            <span>단원명 수정</span>
+                        </button>
+                        <button onclick="confirmDeleteCurrentUnit()" class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-medium transition flex items-center gap-1">
+                            <i class="fa-solid fa-trash"></i>
+                            <span>단원 삭제</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sentences List Section -->
+            <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm">
+                <div class="p-4 sm:p-5 bg-stone-50/70 border-b border-stone-200 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h3 class="font-bold text-stone-800 text-base flex items-center gap-2">
+                            <span>문장 목록</span>
+                            <span id="manage-sentence-count" class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200">0개</span>
+                        </h3>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openBulkSentenceModal()" class="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition flex items-center gap-1.5 border border-amber-300 shadow-sm">
+                            <i class="fa-solid fa-file-lines text-amber-600"></i>
+                            <span>텍스트 일괄 입력</span>
+                        </button>
+                        <button onclick="openSentenceModal(null)" class="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>문장 추가하기</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-stone-100/80 text-stone-600 text-xs uppercase tracking-wider font-bold border-b border-stone-200">
+                                <th class="py-3 px-4 w-16 text-center">번호</th>
+                                <th class="py-3 px-4 w-5/12">중국어 문장</th>
+                                <th class="py-3 px-4 w-4/12">한어병음</th>
+                                <th class="py-3 px-4 w-3/12">한국어 해석</th>
+                                <th class="py-3 px-4 w-24 text-right">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sentence-list-table-body" class="divide-y divide-stone-200 text-sm">
+                            <!-- Table rows will be rendered here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-stone-200/60 border-t border-stone-300/60 py-4 px-4 text-center text-xs text-stone-600">
+        <p>중국어 문장 학습용 스마트 교구 ⓒ 2026 | 교사 맞춤형 학습 도구</p>
+    </footer>
+
+    <!-- BULK SENTENCE INPUT MODAL -->
+    <div id="bulk-sentence-modal" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white border border-stone-200 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
+            <div class="px-6 py-4 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
+                <h3 class="font-bold text-lg text-stone-800 flex items-center gap-2">
+                    <i class="fa-solid fa-file-lines text-amber-600"></i>
+                    <span>텍스트 일괄 입력</span>
+                </h3>
+                <button onclick="closeBulkSentenceModal()" class="text-stone-400 hover:text-stone-700 p-1 rounded-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="bg-amber-50/70 p-3.5 rounded-xl border border-amber-200 text-xs text-amber-900 space-y-2">
+                    <p class="font-bold flex items-center gap-1 text-amber-800">
+                        <i class="fa-solid fa-lightbulb text-amber-600"></i> 입력 예시 (줄바꿈/탭/파이프| 구분)
+                    </p>
+                    <p class="text-stone-600">한 줄에 하나씩 <b>[중국어문장] [한어병음] [한국어해석]</b> 순서로 입력하세요.</p>
+                    <div class="bg-white p-3 rounded-lg text-stone-700 font-mono text-xs space-y-1.5 border border-amber-200/60 shadow-inner">
+                        <p class="text-emerald-900 font-bold"># 방법 1: 3줄씩 묶어 입력 (가장 편한 방식)</p>
+                        <p class="text-stone-600 pl-2">他是中国人。<br>Tā shì Zhōngguórén.<br>그는 중국인입니다.</p>
+                        <p class="text-amber-800 font-bold pt-1"># 방법 2: 탭(\t) 또는 파이프(|) 구분</p>
+                        <p class="text-stone-600 pl-2">我是学生。 | Wǒ shì xuésheng. | 저는 학생입니다.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">문장 목록 붙여넣기</label>
+                    <textarea id="bulk-text-input" rows="8" placeholder="他是中国人。&#10;Tā shì Zhōngguórén.&#10;그는 중국인입니다.&#10;&#10;我是学生。 | Wǒ shì xuésheng. | 저는 학생입니다." class="w-full bg-[#fcfbf9] border border-stone-300 rounded-xl p-3.5 text-stone-800 font-mono text-sm focus:outline-none focus:border-emerald-600 leading-relaxed shadow-inner"></textarea>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
+                    <label class="inline-flex items-center cursor-pointer text-xs text-stone-700 font-medium">
+                        <input type="checkbox" id="bulk-overwrite-checkbox" class="rounded border-stone-300 bg-stone-100 text-emerald-700 focus:ring-emerald-600 w-4 h-4">
+                        <span class="ms-2">기존 문장 삭제 후 새로 등록</span>
+                    </label>
+
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <button type="button" onclick="closeBulkSentenceModal()" class="px-4 py-2 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-700 text-sm font-medium transition">취소</button>
+                        <button type="button" onclick="saveBulkSentences()" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold transition shadow-md">일괄 등록하기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SINGLE SENTENCE ADD / EDIT MODAL -->
+    <div id="sentence-modal" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white border border-stone-200 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl transition-all scale-100">
+            <div class="px-6 py-4 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
+                <h3 id="sentence-modal-title" class="font-bold text-lg text-stone-800">문장 추가</h3>
+                <button onclick="closeSentenceModal()" class="text-stone-400 hover:text-stone-700 p-1 rounded-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="sentence-form" onsubmit="saveSentenceForm(event)" class="p-6 space-y-4">
+                <input type="hidden" id="sentence-id-input">
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">중국어 문장 *</label>
+                    <input type="text" id="sentence-chinese-input" required placeholder="예: 他是中国人。" class="w-full bg-[#fcfbf9] border border-stone-300 rounded-xl px-4 py-2.5 text-stone-900 font-chinese text-xl focus:outline-none focus:border-emerald-600">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">한어병음 (Pinyin) *</label>
+                    <input type="text" id="sentence-pinyin-input" required placeholder="예: Tā shì Zhōngguórén." class="w-full bg-[#fcfbf9] border border-stone-300 rounded-xl px-4 py-2 text-stone-800 text-sm focus:outline-none focus:border-emerald-600 font-mono">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">한국어 해석 (Meaning) *</label>
+                    <input type="text" id="sentence-meaning-input" required placeholder="예: 그는 중국인입니다." class="w-full bg-[#fcfbf9] border border-stone-300 rounded-xl px-4 py-2 text-stone-800 text-sm focus:outline-none focus:border-emerald-600">
+                </div>
+
+                <div class="pt-4 border-t border-stone-200 flex justify-end gap-2">
+                    <button type="button" onclick="closeSentenceModal()" class="px-4 py-2 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-700 text-sm font-medium transition">취소</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold transition shadow-md">저장하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- UNIT ADD/EDIT MODAL -->
+    <div id="unit-modal" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white border border-stone-200 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div class="px-6 py-4 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
+                <h3 id="unit-modal-title" class="font-bold text-lg text-stone-800">단원 관리</h3>
+                <button onclick="closeUnitModal()" class="text-stone-400 hover:text-stone-700 p-1 rounded-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form id="unit-form" onsubmit="saveUnitForm(event)" class="p-6 space-y-4">
+                <input type="hidden" id="unit-action-type" value="add">
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">단원 이름 *</label>
+                    <input type="text" id="unit-title-input" required placeholder="예: 3단원. 자기소개와 직업" class="w-full bg-[#fcfbf9] border border-stone-300 rounded-xl px-4 py-2.5 text-stone-800 text-sm focus:outline-none focus:border-emerald-600">
+                </div>
+                <div class="pt-4 border-t border-stone-200 flex justify-end gap-2">
+                    <button type="button" onclick="closeUnitModal()" class="px-4 py-2 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-700 text-sm font-medium transition">취소</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold transition">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CUSTOM CONFIRMATION MODAL -->
+    <div id="confirm-modal" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white border border-stone-200 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl p-6 text-center space-y-4">
+            <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <p id="confirm-modal-msg" class="text-sm font-semibold text-stone-800 leading-relaxed"></p>
+            <div class="flex items-center justify-center gap-2 pt-2">
+                <button onclick="closeConfirmModal()" class="px-4 py-2 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-700 text-xs font-bold transition">취소</button>
+                <button id="confirm-modal-ok-btn" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-sm">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM TOAST ALERT -->
+    <div id="custom-toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 ease-out pointer-events-none">
+        <div class="bg-stone-800 border border-stone-700 shadow-2xl rounded-xl px-4 py-3 flex items-center gap-3 text-sm text-white">
+            <i id="toast-icon" class="fa-solid fa-circle-info text-emerald-400 text-lg"></i>
+            <span id="toast-message">알림 메시지</span>
+        </div>
+    </div>
+
+    <script>
+        /* ========================================== */
+        /* INITIAL SAMPLE DATA & STATE MANAGEMENT     */
+        /* ========================================== */
+
+        const DEFAULT_DATA = [
+            {
+                id: 'unit_1',
+                title: '1단원: 안부 및 신분 소개',
+                sentences: [
+                    { id: 's1_1', chinese: '划分', pinyin: 'Tā shì Zhōngguórén.', meaning: '그는 중국인입니다.', chinese: '他是中国人。' },
+                    { id: 's1_2', chinese: '他是学生。', pinyin: 'Tā shì xuésheng.', meaning: '그는 학생입니다.' },
+                    { id: 's1_3', chinese: '我是韩国人。', pinyin: 'Wǒ shì Hánguórén.', meaning: '저는 한국인입니다.' },
+                    { id: 's1_4', chinese: '认识你很高兴。', pinyin: 'Rènshi nǐ hěn gāoxìng.', meaning: '당신을 알게 되어 매우 기쁩니다.' },
+                    { id: 's1_5', chinese: '你叫什么名字？', pinyin: 'Nǐ jiào shénme míngzi?', meaning: '당신의 이름은 무엇입니까?' }
+                ]
+            },
+            {
+                id: 'unit_2',
+                title: '2단원: 일상생활 및 질문',
+                sentences: [
+                    { id: 's2_1', chinese: '今天天气很好。', pinyin: 'Jīntiān tiānqì hěn hǎo.', meaning: '오늘 날씨가 매우 좋습니다.' },
+                    { id: 's2_2', chinese: '你要喝什么？', pinyin: 'Nǐ yào hē shénme?', meaning: '당신은 무엇을 마시겠습니까?' },
+                    { id: 's2_3', chinese: '这个多少钱？', pinyin: 'Zhège duōshǎo qián?', meaning: '이것은 얼마입니까?' },
+                    { id: 's2_4', chinese: '你现在去哪里？', pinyin: 'Nǐ xiànzài qù nǎli?', meaning: '당신은 지금 어디에 가나요?' },
+                    { id: 's2_5', chinese: '我们一起去吃饭吧。', pinyin: 'Wǒmen yìqǐ qù chīfàn ba.', meaning: '우리 같이 밥 먹으러 가요.' }
+                ]
+            }
+        ];
+
+        // Global State
+        let appData = [];
+        let currentActiveUnitId = null;
+        
+        // Game Playing Session State
+        let currentGameSentences = [];  // Remaining unshown sentences
+        let currentCardSentence = null;  // Active sentence object
+        let userTypedAnswer = '';        // User optional input text
+        let isAnswerRevealed = false;    // Translation state
+        let showPinyinAlways = true;     // Pinyin toggle
+
+        // Pending Confirmation Callback
+        let onConfirmAction = null;
+
+        /* ========================================== */
+        /* INITIALIZATION                             */
+        /* ========================================== */
+
+        window.onload = function() {
+            loadStoredData();
+            if (appData.length > 0) {
+                currentActiveUnitId = appData[0].id;
+            }
+            populateUnitDropdowns();
+            renderManageSentenceTable();
+            startNewGameSession();
+        };
+
+        function loadStoredData() {
+            const stored = localStorage.getItem('chinese_sentence_game_data');
+            if (stored) {
+                try {
+                    appData = JSON.parse(stored);
+                } catch(e) {
+                    appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                }
+            } else {
+                appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                saveDataToLocalStorage();
+            }
+        }
+
+        function saveDataToLocalStorage() {
+            localStorage.setItem('chinese_sentence_game_data', JSON.stringify(appData));
+        }
+
+        /* ========================================== */
+        /* TAB NAVIGATION                             */
+        /* ========================================== */
+
+        function switchTab(tabName) {
+            const playTab = document.getElementById('tab-play');
+            const manageTab = document.getElementById('tab-manage');
+            const playBtn = document.getElementById('nav-play-btn');
+            const manageBtn = document.getElementById('nav-manage-btn');
+
+            if (tabName === 'play') {
+                playTab.classList.remove('hidden');
+                manageTab.classList.add('hidden');
+
+                playBtn.className = "px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2 bg-emerald-700 text-white shadow-md hover:bg-emerald-800";
+                manageBtn.className = "px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 bg-stone-200/80 text-stone-700 hover:bg-stone-300 hover:text-stone-900";
+                
+                document.getElementById('play-unit-select').value = currentActiveUnitId;
+                startNewGameSession();
+            } else {
+                playTab.classList.add('hidden');
+                manageTab.classList.remove('hidden');
+
+                manageBtn.className = "px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2 bg-emerald-700 text-white shadow-md hover:bg-emerald-800";
+                playBtn.className = "px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 bg-stone-200/80 text-stone-700 hover:bg-stone-300 hover:text-stone-900";
+
+                document.getElementById('manage-unit-select').value = currentActiveUnitId;
+                renderManageSentenceTable();
+            }
+        }
+
+        /* ========================================== */
+        /* GAME PLAY ENGINE                           */
+        /* ========================================== */
+
+        function populateUnitDropdowns() {
+            const playSelect = document.getElementById('play-unit-select');
+            const manageSelect = document.getElementById('manage-unit-select');
+
+            playSelect.innerHTML = '';
+            manageSelect.innerHTML = '';
+
+            if (appData.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = '등록된 단원이 없습니다';
+                playSelect.appendChild(opt.cloneNode(true));
+                manageSelect.appendChild(opt);
+                return;
+            }
+
+            appData.forEach(unit => {
+                const count = unit.sentences ? unit.sentences.length : 0;
+                const opt1 = document.createElement('option');
+                opt1.value = unit.id;
+                opt1.textContent = `${unit.title} (${count}문장)`;
+                playSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = unit.id;
+                opt2.textContent = `${unit.title} (${count}문장)`;
+                manageSelect.appendChild(opt2);
+            });
+
+            if (currentActiveUnitId && appData.some(u => u.id === currentActiveUnitId)) {
+                playSelect.value = currentActiveUnitId;
+                manageSelect.value = currentActiveUnitId;
+            } else if (appData.length > 0) {
+                currentActiveUnitId = appData[0].id;
+                playSelect.value = currentActiveUnitId;
+                manageSelect.value = currentActiveUnitId;
+            }
+        }
+
+        function onSelectUnitForPlay() {
+            currentActiveUnitId = document.getElementById('play-unit-select').value;
+            startNewGameSession();
+        }
+
+        function togglePinyinVisibility() {
+            showPinyinAlways = document.getElementById('pinyin-toggle').checked;
+            renderCard();
+        }
+
+        function resetCurrentGameSession() {
+            startNewGameSession();
+            showToast('게임이 다시 시작되었습니다.');
+        }
+
+        function getCurrentUnit() {
+            return appData.find(u => u.id === currentActiveUnitId);
+        }
+
+        function startNewGameSession() {
+            const unit = getCurrentUnit();
+            if (!unit || !unit.sentences || unit.sentences.length === 0) {
+                renderEmptyGameCard('해당 단원에 등록된 문장이 없습니다.<br>문장 관리 탭에서 문장을 추가해 주세요.');
+                updateProgressUI(0, 0);
+                return;
+            }
+
+            currentGameSentences = [...unit.sentences];
+            isAnswerRevealed = false;
+            userTypedAnswer = '';
+            
+            updateProgressUI(0, unit.sentences.length);
+            nextRandomCard();
+        }
+
+        function updateProgressUI(playedCount, totalCount) {
+            const progressText = document.getElementById('play-progress-text');
+            progressText.textContent = `${playedCount} / ${totalCount}`;
+        }
+
+        function nextRandomCard() {
+            isAnswerRevealed = false;
+            userTypedAnswer = '';
+
+            const unit = getCurrentUnit();
+            if (!unit) return;
+
+            const totalSentences = unit.sentences.length;
+            const remainingCount = currentGameSentences.length;
+            const playedCount = totalSentences - remainingCount;
+
+            updateProgressUI(playedCount, totalSentences);
+
+            if (remainingCount === 0) {
+                renderGameFinishedCard(totalSentences);
+                triggerConfetti();
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * currentGameSentences.length);
+            currentCardSentence = currentGameSentences[randomIndex];
+            
+            currentGameSentences.splice(randomIndex, 1);
+
+            renderCard();
+        }
+
+        function renderCard() {
+            const container = document.getElementById('game-card-container');
+            const item = currentCardSentence;
+
+            if (!item) return;
+
+            const shouldShowPinyin = showPinyinAlways || isAnswerRevealed;
+
+            container.innerHTML = `
+                <div class="w-full bg-white border border-stone-200 rounded-3xl p-6 sm:p-10 shadow-md space-y-8 transform transition-all animate-fade-in">
+                    
+                    <!-- Question Display Box -->
+                    <div class="text-center space-y-6 py-4 px-2">
+                        <span class="inline-block px-3.5 py-1 bg-emerald-100 text-emerald-900 text-xs font-bold rounded-full border border-emerald-200">
+                            <i class="fa-solid fa-quote-left text-emerald-700 mr-1"></i> 중국어 문장
+                        </span>
+
+                        <!-- Chinese Sentence -->
+                        <div class="font-chinese text-3xl sm:text-4xl lg:text-5xl font-black text-stone-900 leading-snug tracking-wide drop-shadow-sm select-text">
+                            ${escapeHtml(item.chinese)}
+                        </div>
+
+                        <!-- Pinyin Area -->
+                        <div class="min-h-[40px] flex items-center justify-center">
+                            ${shouldShowPinyin ? `
+                                <div class="text-xl sm:text-2xl font-bold text-amber-800 tracking-wide font-sans bg-amber-50/80 px-4 py-1.5 rounded-xl border border-amber-200/80 inline-block">
+                                    ${escapeHtml(item.pinyin)}
+                                </div>
+                            ` : `
+                                <button onclick="togglePinyinTemporary()" class="text-xs text-stone-400 hover:text-amber-800 transition flex items-center gap-1 bg-stone-100 px-3 py-1 rounded-lg">
+                                    <i class="fa-solid fa-eye"></i>
+                                    <span>한어병음 보기</span>
+                                </button>
+                            `}
+                        </div>
+                    </div>
+
+                    <!-- User Input Box (Optional practice) -->
+                    <div class="bg-[#fcfbf9] p-4 rounded-2xl border border-stone-200 space-y-2">
+                        <label class="block text-xs font-bold text-stone-700 flex items-center gap-1.5">
+                            <i class="fa-solid fa-pen-to-square text-emerald-700"></i>
+                            <span>한국어 해석 직접 적어보기 (선택 사항)</span>
+                        </label>
+                        <input type="text" id="play-answer-input" value="${escapeHtml(userTypedAnswer)}" 
+                            placeholder="예: 그는 중국인입니다." 
+                            onkeydown="handleAnswerInputKeyDown(event)"
+                            ${isAnswerRevealed ? 'disabled' : ''}
+                            class="w-full bg-white border border-stone-300 rounded-xl px-4 py-2.5 text-stone-900 font-medium text-base focus:outline-none focus:border-emerald-600 placeholder:text-stone-400 ${isAnswerRevealed ? 'opacity-70 cursor-not-allowed bg-stone-100' : ''}">
+                    </div>
+
+                    <!-- Answer Reveal Box -->
+                    <div id="answer-box" class="transition-all duration-300 ${isAnswerRevealed ? 'block' : 'hidden'}">
+                        <div class="bg-gradient-to-r from-emerald-50 to-teal-50/60 rounded-2xl p-6 border border-emerald-200 space-y-3 shadow-inner">
+                            <div class="flex items-center justify-between border-b border-emerald-200/70 pb-2">
+                                <span class="text-xs font-bold uppercase tracking-widest text-emerald-800 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-circle-check text-emerald-600"></i> 한국어 해석 (정답)
+                                </span>
+                                ${userTypedAnswer ? `<span class="text-xs text-stone-500">작성 내용: <strong class="text-stone-800 font-semibold">'${escapeHtml(userTypedAnswer)}'</strong></span>` : ''}
+                            </div>
+                            
+                            <div class="text-xl sm:text-2xl font-black text-emerald-950 pt-1 leading-snug">
+                                ${escapeHtml(item.meaning)}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                        ${!isAnswerRevealed ? `
+                            <button onclick="revealAnswer()" class="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-700 to-teal-800 hover:from-emerald-800 hover:to-teal-900 text-white font-bold text-lg shadow-md transition-all transform active:scale-95 flex items-center justify-center gap-3">
+                                <i class="fa-solid fa-key"></i>
+                                <span>정답 (해석) 확인하기</span>
+                            </button>
+                        ` : `
+                            <button onclick="nextRandomCard()" class="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-lg shadow-md transition-all transform active:scale-95 flex items-center justify-center gap-3">
+                                <span>다음 문장으로</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        `}
+                    </div>
+                </div>
+            `;
+
+            if (!isAnswerRevealed) {
+                setTimeout(() => {
+                    const input = document.getElementById('play-answer-input');
+                    if (input) input.focus();
+                }, 50);
+            }
+        }
+
+        function togglePinyinTemporary() {
+            showPinyinAlways = true;
+            document.getElementById('pinyin-toggle').checked = true;
+            renderCard();
+        }
+
+        function handleAnswerInputKeyDown(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                if (!isAnswerRevealed) {
+                    revealAnswer();
+                } else {
+                    nextRandomCard();
+                }
+            }
+        }
+
+        function revealAnswer() {
+            if (isAnswerRevealed) return;
+            
+            const inputEl = document.getElementById('play-answer-input');
+            if (inputEl) {
+                userTypedAnswer = inputEl.value.trim();
+            }
+
+            isAnswerRevealed = true;
+            renderCard();
+        }
+
+        function renderEmptyGameCard(message) {
+            const container = document.getElementById('game-card-container');
+            container.innerHTML = `
+                <div class="w-full bg-white border border-stone-200 rounded-3xl p-10 text-center space-y-4 shadow-sm">
+                    <div class="w-16 h-16 rounded-2xl bg-stone-100 text-stone-400 flex items-center justify-center mx-auto text-2xl">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                    <p class="text-stone-700 font-medium">${message}</p>
+                </div>
+            `;
+        }
+
+        function renderGameFinishedCard(totalSentences) {
+            const container = document.getElementById('game-card-container');
+            container.innerHTML = `
+                <div class="w-full bg-white border border-emerald-200 rounded-3xl p-8 sm:p-12 text-center space-y-6 shadow-md animate-fade-in">
+                    <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-700 flex items-center justify-center mx-auto text-white text-3xl shadow-md">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h2 class="text-2xl sm:text-3xl font-black text-emerald-950">모든 문장 학습 완료!</h2>
+                        <p class="text-sm text-stone-600">
+                            총 <span class="text-emerald-700 font-bold">${totalSentences}개</span>의 문장을 모두 학습하셨습니다.
+                        </p>
+                    </div>
+
+                    <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <button onclick="startNewGameSession()" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm transition flex items-center justify-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            <span>다시 도전하기</span>
+                        </button>
+                        <button onclick="switchTab('manage')" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-bold text-sm transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>새 문장 추가하기</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        /* ========================================== */
+        /* SENTENCE & UNIT MANAGEMENT                 */
+        /* ========================================== */
+
+        function onSelectUnitForManage() {
+            currentActiveUnitId = document.getElementById('manage-unit-select').value;
+            renderManageSentenceTable();
+        }
+
+        function renderManageSentenceTable() {
+            const tableBody = document.getElementById('sentence-list-table-body');
+            const countBadge = document.getElementById('manage-sentence-count');
+            const unit = getCurrentUnit();
+
+            tableBody.innerHTML = '';
+
+            if (!unit || !unit.sentences || unit.sentences.length === 0) {
+                countBadge.textContent = '0개';
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="py-12 text-center text-stone-400">
+                            <i class="fa-solid fa-info-circle mb-2 text-xl block text-stone-300"></i>
+                            등록된 문장이 없습니다. 우측 상단의 '문장 추가하기' 버튼을 누르세요.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            countBadge.textContent = `${unit.sentences.length}개`;
+
+            unit.sentences.forEach((item, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-stone-50 transition";
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-center text-stone-400 font-mono text-xs">${idx + 1}</td>
+                    <td class="py-3 px-4 font-chinese font-bold text-emerald-950 text-lg">${escapeHtml(item.chinese)}</td>
+                    <td class="py-3 px-4 text-amber-800 font-semibold font-sans">${escapeHtml(item.pinyin)}</td>
+                    <td class="py-3 px-4 text-stone-800 font-medium">${escapeHtml(item.meaning)}</td>
+                    <td class="py-3 px-4 text-right">
+                        <div class="flex items-center justify-end gap-1.5">
+                            <button onclick="openSentenceModal('${item.id}')" class="p-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-600 transition" title="수정">
+                                <i class="fa-solid fa-pen text-xs"></i>
+                            </button>
+                            <button onclick="deleteSentence('${item.id}')" class="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition" title="삭제">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        /* --- SENTENCE MODAL FUNCTIONS --- */
+
+        function openSentenceModal(sentenceId) {
+            const modal = document.getElementById('sentence-modal');
+            const title = document.getElementById('sentence-modal-title');
+            const idInput = document.getElementById('sentence-id-input');
+            const chineseInput = document.getElementById('sentence-chinese-input');
+            const pinyinInput = document.getElementById('sentence-pinyin-input');
+            const meaningInput = document.getElementById('sentence-meaning-input');
+
+            const unit = getCurrentUnit();
+            if (!unit) {
+                showToast('먼저 단원을 추가하거나 선택해주세요.');
+                return;
+            }
+
+            if (sentenceId) {
+                const target = unit.sentences.find(s => s.id === sentenceId);
+                if (!target) return;
+
+                title.textContent = '문장 수정';
+                idInput.value = target.id;
+                chineseInput.value = target.chinese;
+                pinyinInput.value = target.pinyin;
+                meaningInput.value = target.meaning;
+            } else {
+                title.textContent = '문장 추가';
+                idInput.value = '';
+                chineseInput.value = '';
+                pinyinInput.value = '';
+                meaningInput.value = '';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeSentenceModal() {
+            document.getElementById('sentence-modal').classList.add('hidden');
+        }
+
+        function saveSentenceForm(event) {
+            event.preventDefault();
+            const unit = getCurrentUnit();
+            if (!unit) return;
+
+            const sentenceId = document.getElementById('sentence-id-input').value;
+            const chinese = document.getElementById('sentence-chinese-input').value.trim();
+            const pinyin = document.getElementById('sentence-pinyin-input').value.trim();
+            const meaning = document.getElementById('sentence-meaning-input').value.trim();
+
+            if (!chinese || !pinyin || !meaning) {
+                showToast('필수 항목을 모두 입력하세요.');
+                return;
+            }
+
+            if (sentenceId) {
+                const targetIdx = unit.sentences.findIndex(s => s.id === sentenceId);
+                if (targetIdx !== -1) {
+                    unit.sentences[targetIdx] = { id: sentenceId, chinese, pinyin, meaning };
+                    showToast('문장이 수정되었습니다.');
+                }
+            } else {
+                const newId = 's_' + Date.now();
+                unit.sentences.push({ id: newId, chinese, pinyin, meaning });
+                showToast('새 문장이 추가되었습니다.');
+            }
+
+            saveDataToLocalStorage();
+            populateUnitDropdowns();
+            renderManageSentenceTable();
+            closeSentenceModal();
+        }
+
+        function deleteSentence(sentenceId) {
+            const unit = getCurrentUnit();
+            if (!unit) return;
+
+            unit.sentences = unit.sentences.filter(s => s.id !== sentenceId);
+            saveDataToLocalStorage();
+            populateUnitDropdowns();
+            renderManageSentenceTable();
+            showToast('문장이 삭제되었습니다.');
+        }
+
+        /* --- BULK SENTENCE MODAL & PARSER --- */
+
+        function openBulkSentenceModal() {
+            const unit = getCurrentUnit();
+            if (!unit) {
+                showToast('먼저 단원을 추가하거나 선택해주세요.');
+                return;
+            }
+            document.getElementById('bulk-text-input').value = '';
+            document.getElementById('bulk-overwrite-checkbox').checked = false;
+            document.getElementById('bulk-sentence-modal').classList.remove('hidden');
+        }
+
+        function closeBulkSentenceModal() {
+            document.getElementById('bulk-sentence-modal').classList.add('hidden');
+        }
+
+        function saveBulkSentences() {
+            const unit = getCurrentUnit();
+            if (!unit) return;
+
+            const text = document.getElementById('bulk-text-input').value;
+            const isOverwrite = document.getElementById('bulk-overwrite-checkbox').checked;
+
+            if (!text.trim()) {
+                showToast('등록할 문장 텍스트를 입력해주세요.');
+                return;
+            }
+
+            const parsedSentences = parseBulkSentenceText(text);
+
+            if (parsedSentences.length === 0) {
+                showToast('인식된 문장이 없습니다. 형식을 확인해주세요.');
+                return;
+            }
+
+            if (isOverwrite) {
+                unit.sentences = parsedSentences;
+            } else {
+                unit.sentences.push(...parsedSentences);
+            }
+
+            saveDataToLocalStorage();
+            populateUnitDropdowns();
+            renderManageSentenceTable();
+            closeBulkSentenceModal();
+            showToast(`${parsedSentences.length}개의 문장이 성공적으로 등록되었습니다!`);
+        }
+
+        /**
+         * Intelligent Parser supporting:
+         * 1) 3-lines grouping: Line1(Chinese), Line2(Pinyin), Line3(Meaning)
+         * 2) Single line delimited by Pipe '|', Tab '\t', or Slash '/'
+         */
+        function parseBulkSentenceText(text) {
+            const rawLines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            const result = [];
+
+            // Check if single line has delimiters (| or \t or /)
+            const hasDelimiters = rawLines.some(line => line.includes('|') || line.includes('\t') || line.includes('/'));
+
+            if (hasDelimiters) {
+                rawLines.forEach(line => {
+                    let parts = [];
+                    if (line.includes('|')) parts = line.split('|');
+                    else if (line.includes('\t')) parts = line.split('\t');
+                    else if (line.includes('/')) parts = line.split('/');
+
+                    parts = parts.map(p => p.trim()).filter(p => p.length > 0);
+
+                    if (parts.length >= 3) {
+                        result.push({
+                            id: 's_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+                            chinese: parts[0],
+                            pinyin: parts[1],
+                            meaning: parts.slice(2).join(' ')
+                        });
+                    }
+                });
+            } else {
+                // Group by 3 consecutive lines
+                for (let i = 0; i < rawLines.length; i += 3) {
+                    if (i + 2 < rawLines.length) {
+                        result.push({
+                            id: 's_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+                            chinese: rawLines[i],
+                            pinyin: rawLines[i + 1],
+                            meaning: rawLines[i + 2]
+                        });
+                    } else if (i + 1 < rawLines.length) {
+                        // Fallback if only 2 lines provided
+                        result.push({
+                            id: 's_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+                            chinese: rawLines[i],
+                            pinyin: rawLines[i + 1],
+                            meaning: rawLines[i + 1]
+                        });
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        /* --- UNIT MODAL FUNCTIONS --- */
+
+        function openAddUnitModal() {
+            document.getElementById('unit-modal-title').textContent = '새 단원 추가';
+            document.getElementById('unit-action-type').value = 'add';
+            document.getElementById('unit-title-input').value = '';
+            document.getElementById('unit-modal').classList.remove('hidden');
+        }
+
+        function openEditUnitModal() {
+            const unit = getCurrentUnit();
+            if (!unit) return;
+
+            document.getElementById('unit-modal-title').textContent = '단원명 수정';
+            document.getElementById('unit-action-type').value = 'edit';
+            document.getElementById('unit-title-input').value = unit.title;
+            document.getElementById('unit-modal').classList.remove('hidden');
+        }
+
+        function closeUnitModal() {
+            document.getElementById('unit-modal').classList.add('hidden');
+        }
+
+        function saveUnitForm(event) {
+            event.preventDefault();
+            const action = document.getElementById('unit-action-type').value;
+            const title = document.getElementById('unit-title-input').value.trim();
+
+            if (!title) return;
+
+            if (action === 'add') {
+                const newUnitId = 'unit_' + Date.now();
+                appData.push({
+                    id: newUnitId,
+                    title: title,
+                    sentences: []
+                });
+                currentActiveUnitId = newUnitId;
+                showToast('새 단원이 생성되었습니다.');
+            } else {
+                const unit = getCurrentUnit();
+                if (unit) {
+                    unit.title = title;
+                    showToast('단원명이 변경되었습니다.');
+                }
+            }
+
+            saveDataToLocalStorage();
+            populateUnitDropdowns();
+            renderManageSentenceTable();
+            closeUnitModal();
+        }
+
+        function confirmDeleteCurrentUnit() {
+            if (appData.length <= 1) {
+                showToast('최소 1개 이상의 단원은 존재해야 합니다.');
+                return;
+            }
+
+            const unit = getCurrentUnit();
+            if (!unit) return;
+
+            openConfirmModal(`'${unit.title}' 단원과 포함된 모든 문장을 삭제하시겠습니까?`, () => {
+                appData = appData.filter(u => u.id !== currentActiveUnitId);
+                currentActiveUnitId = appData[0].id;
+                saveDataToLocalStorage();
+                populateUnitDropdowns();
+                renderManageSentenceTable();
+                showToast('단원이 삭제되었습니다.');
+            });
+        }
+
+        /* ========================================== */
+        /* JSON BACKUP / IMPORT & EXPORT              */
+        /* ========================================== */
+
+        function exportDataJSON() {
+            const jsonStr = JSON.stringify(appData, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const dateStr = new Date().toISOString().slice(0,10);
+            const fileName = `중국어_문장데이터_${dateStr}.json`;
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast('백업 파일이 다운로드되었습니다.');
+        }
+
+        function importDataJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].title && (parsed[0].sentences || parsed[0].words)) {
+                        appData = parsed.map(unit => ({
+                            id: unit.id || 'unit_' + Date.now(),
+                            title: unit.title,
+                            sentences: unit.sentences || unit.words || []
+                        }));
+                        currentActiveUnitId = appData[0].id;
+                        saveDataToLocalStorage();
+                        populateUnitDropdowns();
+                        renderManageSentenceTable();
+                        showToast('데이터를 성공적으로 불러왔습니다!');
+                    } else {
+                        showToast('올바르지 않은 데이터 형식입니다.');
+                    }
+                } catch(err) {
+                    showToast('JSON 파일을 읽는 도중 오류가 발생했습니다.');
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function executeResetDefaultData() {
+            appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+            currentActiveUnitId = appData[0].id;
+            saveDataToLocalStorage();
+            populateUnitDropdowns();
+            renderManageSentenceTable();
+            showToast('기본 샘플 데이터로 초기화되었습니다.');
+        }
+
+        /* ========================================== */
+        /* UTILITIES & DIALOGS                        */
+        /* ========================================== */
+
+        function openConfirmModal(message, actionCallback) {
+            document.getElementById('confirm-modal-msg').textContent = message;
+            onConfirmAction = actionCallback;
+            const okBtn = document.getElementById('confirm-modal-ok-btn');
+            okBtn.onclick = function() {
+                if (onConfirmAction) onConfirmAction();
+                closeConfirmModal();
+            };
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            onConfirmAction = null;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('custom-toast');
+            const msgEl = document.getElementById('toast-message');
+            msgEl.textContent = message;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
