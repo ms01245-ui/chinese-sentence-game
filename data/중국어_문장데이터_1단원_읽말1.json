@@ -1,0 +1,152 @@
+[
+  {
+    "id": "unit_1",
+    "title": "1단원: 듣고말하기1",
+    "sentences": [
+      {
+        "id": "s_1787212561974_n9pf7",
+        "chinese": "他是中国人。",
+        "pinyin": "Tā shì Zhōngguórén.",
+        "meaning": "그는 중국인입니다."
+      },
+      {
+        "id": "s_1787212561974_e135c",
+        "chinese": "他是学生。",
+        "pinyin": "Tā shì xuésheng.",
+        "meaning": "그는 학생입니다."
+      },
+      {
+        "id": "s_1787212561974_74alb",
+        "chinese": "他是汉语老师。",
+        "pinyin": "Tā shì Hànyǔ lǎoshī.",
+        "meaning": "그는 중국어 선생님입니다."
+      },
+      {
+        "id": "s_1787212561974_33ju9",
+        "chinese": "他是我的朋友。",
+        "pinyin": "Tā shì wǒ de péngyou.",
+        "meaning": "그는 제 친구입니다."
+      },
+      {
+        "id": "s_1787212561974_9etuj",
+        "chinese": "我扫你。",
+        "pinyin": "Wǒ sǎo nǐ.",
+        "meaning": "내가 너를 스캔할게."
+      },
+      {
+        "id": "s_1787212561974_41bqh",
+        "chinese": "我爱你。",
+        "pinyin": "Wǒ ài nǐ.",
+        "meaning": "나는 너를 사랑해."
+      },
+      {
+        "id": "s_1787212561974_88ps8",
+        "chinese": "我支持你。",
+        "pinyin": "Wǒ zhīchí nǐ.",
+        "meaning": "나는 너를 응원해/지지해."
+      },
+      {
+        "id": "s_1787212561974_t7nsl",
+        "chinese": "我相信你。",
+        "pinyin": "Wǒ xiāngxìn nǐ.",
+        "meaning": "나는 너를 믿어."
+      }
+    ]
+  },
+  {
+    "id": "unit_2",
+    "title": "1단원: 읽고말하기1",
+    "sentences": [
+      {
+        "id": "s_1787212707964_gfnit",
+        "chinese": "他是我的朋友，刘平。",
+        "pinyin": "Tā shì wǒ de péngyou, Liú Píng.",
+        "meaning": "그는 제 친구 리우핑입니다."
+      },
+      {
+        "id": "s_1787212707964_jpn1q",
+        "chinese": "你好！我叫刘平，平安的平。",
+        "pinyin": "Nǐ hǎo! Wǒ jiào Liú Píng, píng’ān de píng.",
+        "meaning": "안녕하세요! 저는 리우핑이라고 합니다. 평안(平安)의 ‘핑(平)’입니다."
+      },
+      {
+        "id": "s_1787212707964_5u8z5",
+        "chinese": "你好！认识你很高兴。",
+        "pinyin": "Nǐ hǎo! Rènshi nǐ hěn gāoxìng.",
+        "meaning": "안녕하세요! 만나서 반갑습니다."
+      },
+      {
+        "id": "s_1787212707964_qtoqv",
+        "chinese": "他是中国人。",
+        "pinyin": "Tā shì Zhōngguórén.",
+        "meaning": "그는 중국인입니다."
+      },
+      {
+        "id": "s_1787212707964_hzke0",
+        "chinese": "是吗？我们可以加个好友吗？",
+        "pinyin": "Shì ma? Wǒmen kěyǐ jiā ge hǎoyǒu ma?",
+        "meaning": "그래요? 우리 친구 추가해도 될까요?"
+      },
+      {
+        "id": "s_1787212707964_6j0tu",
+        "chinese": "当然可以，我扫你吧。",
+        "pinyin": "Dāngrán kěyǐ, wǒ sǎo nǐ ba.",
+        "meaning": "물론이죠. 제가 스캔할게요."
+      },
+      {
+        "id": "s_1787212929018_v2a0v",
+        "chinese": "他是我的朋友。",
+        "pinyin": "Tā shì wǒ de péngyou.",
+        "meaning": "그는 제 친구입니다."
+      },
+      {
+        "id": "s_1787212929018_8blf3",
+        "chinese": "她是我的朋友。",
+        "pinyin": "Tā shì wǒ de péngyou.",
+        "meaning": "그녀는 제 친구입니다."
+      },
+      {
+        "id": "s_1787212929018_knk63",
+        "chinese": "他是韩国人。",
+        "pinyin": "Tā shì Hánguórén.",
+        "meaning": "그는 한국인입니다."
+      },
+      {
+        "id": "s_1787212929018_7y3qb",
+        "chinese": "这是我的书。",
+        "pinyin": "Zhè shì wǒ de shū.",
+        "meaning": "이것은 제 책입니다."
+      },
+      {
+        "id": "s_1787212929018_19d0i",
+        "chinese": "你可以走。",
+        "pinyin": "Nǐ kěyǐ zǒu.",
+        "meaning": "당신은 가도 됩니다."
+      },
+      {
+        "id": "s_1787212929018_4eox6",
+        "chinese": "我们可以走。",
+        "pinyin": "Wǒmen kěyǐ zǒu.",
+        "meaning": "우리는 가도 됩니다."
+      },
+      {
+        "id": "s_1787212929018_sag20",
+        "chinese": "现在可以走。",
+        "pinyin": "Xiànzài kěyǐ zǒu.",
+        "meaning": "지금 가도 됩니다."
+      },
+      {
+        "id": "s_1787212929018_23rtz",
+        "chinese": "你可以告诉我。",
+        "pinyin": "Nǐ kěyǐ gàosu wǒ.",
+        "meaning": "나에게 말해 줘도 됩니다."
+      },
+      {
+        "id": "s_1787212929018_oz0n6",
+        "chinese": "我们可以加好友吗？",
+        "pinyin": "Wǒmen kěyǐ jiā hǎoyǒu ma?",
+        "meaning": "우리 친구 추가해도 될까요?"
+      }
+    ]
+  }
+]
